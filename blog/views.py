@@ -58,7 +58,10 @@ def index(request):
 
 
 def post_detail(request, slug):
-    post = get_object_or_404(Post.objects.select_related('author'), slug=slug)
+    post = get_object_or_404(
+        Post.objects.annotate(total_likes=Count('likes', distinct=True)).select_related('author'),
+        slug=slug,
+    )
     comments = post.comments.select_related('author').all()
     # comments = Comment.objects.filter(post=post)
     serialized_comments = []
@@ -69,7 +72,6 @@ def post_detail(request, slug):
             'author': comment.author.username,
         })
 
-    likes = post.likes.all()
 
     related_tags = Tag.objects.popular()[:5]
 
@@ -78,7 +80,7 @@ def post_detail(request, slug):
         'text': post.text,
         'author': post.author.username,
         'comments': serialized_comments,
-        'likes_amount': len(likes),
+        'likes_amount': post.total_likes,
         'image_url': post.image.url if post.image else None,
         'published_at': post.published_at,
         'slug': post.slug,
