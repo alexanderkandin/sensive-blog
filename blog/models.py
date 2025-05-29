@@ -3,7 +3,7 @@ from django.utils import timezone
 from django.db import models
 from django.urls import reverse
 from django.contrib.auth.models import User
-from django.db.models import Count
+from django.db.models import Count, Prefetch
 
 class PostQuerySet(models.QuerySet):
     def year(self,year):
@@ -13,7 +13,9 @@ class PostQuerySet(models.QuerySet):
 
     def popular(self):
         popular_post = self.annotate(
-        total_likes=Count("likes",distinct=True)).order_by('-total_likes')
+        total_likes=Count("likes",distinct=True)).prefetch_related(
+                                 Prefetch('tags', queryset=Tag.objects.popular())
+                             ).order_by('-total_likes')
         return popular_post
 
     def fetch_with_comments(self):
