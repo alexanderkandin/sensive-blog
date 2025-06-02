@@ -21,8 +21,8 @@ class PostQuerySet(models.QuerySet):
     def fetch_with_comments(self):
         #Метод лучше чем два annotate, потому что не создает дублирующие данные когда происходят расчеты
 
-        most_popular_posts_ids =  [post.id for post in self]
-        posts_with_comments = Post.objects.filter(id__in=most_popular_posts_ids).annotate(
+        most_posts_ids =  [post.id for post in self]
+        posts_with_comments = Post.objects.filter(id__in=most_posts_ids).annotate(
             comments_count=Count("comments",distinct=True))
         ids_and_comments = posts_with_comments.values_list('id','comments_count')
         count_for_id = dict(ids_and_comments)
